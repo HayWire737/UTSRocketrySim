@@ -11,11 +11,11 @@ import CoolProp.CoolProp as CP
 FLUID = "NitrousOxide"
 
 # Fixed points of N2O, read from the equation of state itself
-T_CRIT = CP.PropsSI("Tcrit", FLUID) # K (~309.52 K = 36.37 C)
-P_CRIT = CP.PropsSI("pcrit", FLUID) # Pa (~72.45 bar)
-RHO_CRIT = CP.PropsSI("rhocrit", FLUID) # kg/m^3 (~452)
-T_TRIPLE = CP.PropsSI("Ttriple", FLUID) # K (~182.3 K = -90.8 C, below this it freezes)
-MOLAR_MASS = CP.PropsSI("molarmass", FLUID) # kg/mol (0.04401)
+T_CRIT = CP.PropsSI("Tcrit", FLUID)          # K      (~309.52 K = 36.37 C)
+P_CRIT = CP.PropsSI("pcrit", FLUID)          # Pa     (~72.45 bar)
+RHO_CRIT = CP.PropsSI("rhocrit", FLUID)      # kg/m^3 (~452)
+T_TRIPLE = CP.PropsSI("Ttriple", FLUID)      # K      (~182.3 K = -90.8 C, below this it freezes)
+MOLAR_MASS = CP.PropsSI("molarmass", FLUID)  # kg/mol (0.04401)
 
 
 @dataclass(frozen=True)
@@ -47,10 +47,15 @@ class SaturationState:
 
 def saturation(T: float) -> SaturationState:
     """Saturated liquid and vapour properties of N2O at temperature T (kelvin)."""
-    if not (T_TRIPLE <= T < T_CRIT):
+    if T < T_TRIPLE:
         raise ValueError(
-            f"T = {T:.2f} K is outside the liquid+vapour range "
-            f"({T_TRIPLE:.2f} K to {T_CRIT:.2f} K). Above T_crit there is no liquid."
+            f"T = {T:.2f} K is below the triple point ({T_TRIPLE:.2f} K), where N2O is solid. "
+            "Did you pass Celsius instead of kelvin?"
+        )
+    if T >= T_CRIT:
+        raise ValueError(
+            f"T = {T:.2f} K is at or above the critical point ({T_CRIT:.2f} K): there is no "
+            "separate liquid and vapour. Use state() for supercritical N2O."
         )
 
     def liquid(prop):
@@ -73,6 +78,11 @@ def saturation(T: float) -> SaturationState:
 
 def saturation_from_pressure(p: float) -> SaturationState:
     """Same as saturation(), but you give the pressure (Pa) instead of the temperature."""
+    if p >= P_CRIT:
+        raise ValueError(
+            f"p = {p / 1e5:.1f} bar is at or above the critical pressure "
+            f"({P_CRIT / 1e5:.2f} bar): no liquid/vapour saturation state exists."
+        )
     T = CP.PropsSI("T", "P", p, "Q", 0, FLUID)
     return saturation(T)
 
