@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "utsrocketrysim"
+version = "0.1.0"
+description = "Open-source N2O hybrid rocket engine simulator: two-phase nitrous oxide, injector flow, 3D fuel grain regression."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "UTS Rocketry Team" }]
+keywords = ["rocketry", "hybrid rocket", "nitrous oxide", "propulsion", "simulation"]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "CoolProp>=6.6",
+]
+
+[project.optional-dependencies]
+# 3D grain regression + visualisation + CAD import (phase 3)
+grain3d = ["scikit-fmm>=2023.4", "scikit-image>=0.21", "trimesh>=4.0", "pyvista>=0.43"]
+dev = ["pytest>=7", "ruff>=0.4"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
